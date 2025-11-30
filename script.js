@@ -22,6 +22,17 @@ const cardData = [
     action: 'Выбери ветвь, фиксируй её через действие/обет.',
   },
   {
+    id: 'node-gate',
+    type: 'node',
+    code: 'N9',
+    title: 'Пороговая Комната',
+    essence: 'Комната, где решение удерживается, пока не принят шаг.',
+    energy: 'напряжённое равновесие',
+    hint: 'замеревший маятник',
+    signal: 'Все варианты открыты, но время на паузе.',
+    action: 'Определи критерий выбора и двигайся, не оглядываясь.',
+  },
+  {
     id: 'figure-witness',
     type: 'figure',
     code: 'F4',
@@ -42,6 +53,17 @@ const cardData = [
     hint: 'руки в перчатках',
     signal: 'Требуется скрытое вмешательство и тонкая настройка.',
     action: 'Собери узлы, выстрой протокол, не раскрывая карты.',
+  },
+  {
+    id: 'figure-cartographer',
+    type: 'figure',
+    code: 'F9',
+    title: 'Картограф',
+    essence: 'Тот, кто отмечает найденные пороги и возвращает структуру.',
+    energy: 'холодная ясность',
+    hint: 'карта со смещёнными слоями',
+    signal: 'Маршрут разросся, нет понятной схемы движения.',
+    action: 'Собери точки на карту, отдели реальные связи от шумовых.',
   },
   {
     id: 'operation-sever',
@@ -66,6 +88,17 @@ const cardData = [
     action: 'Обозначь цель, собери фокус и выстрели.',
   },
   {
+    id: 'operation-bridge',
+    type: 'operation',
+    code: 'O9',
+    title: 'Стяжение',
+    essence: 'Соединить два несовместимых состояния временным мостом.',
+    energy: 'протяжка',
+    hint: 'накрученная спираль',
+    signal: 'Нужно удержать два противоречия в одном поле.',
+    action: 'Создай буфер, договорись о временных правилах, не смешивай.',
+  },
+  {
     id: 'scene-bridge',
     type: 'scene',
     code: 'S1',
@@ -86,6 +119,28 @@ const cardData = [
     hint: 'пульсирующие стены',
     signal: 'Идеи повторяются, пока не изменят форму.',
     action: 'Лови повторяющиеся мотивы, выделяй главный и усиливай.',
+  },
+  {
+    id: 'scene-forge',
+    type: 'scene',
+    code: 'S8',
+    title: 'Тигель',
+    essence: 'Замкнутое пространство, где элементы плавятся и соединяются.',
+    energy: 'интенсивное смешение',
+    hint: 'раскалённые круги',
+    signal: 'Материалы уже в процессе плавки, пора задать форму.',
+    action: 'Поддержи жар, задай матрицу, не выходи из процесса раньше времени.',
+  },
+  {
+    id: 'scene-orbit',
+    type: 'scene',
+    code: 'S9',
+    title: 'Орбитальный коридор',
+    essence: 'Движение по предсказуемой дуге вокруг главного узла.',
+    energy: 'цикличность',
+    hint: 'кружение света',
+    signal: 'Ты ходишь по орбите, но центр притяжения пока закрыт.',
+    action: 'Отметь период, добавь импульс в нужной точке, чтобы сменить орбиту.',
   },
   {
     id: 'node-surge',
@@ -158,6 +213,12 @@ const spreads = [
     description: 'Как пройти к ядру: вход → заблуждение → подсказка → ядро.',
     path: ['scene', 'figure', 'operation', 'node'],
   },
+  {
+    id: 'orbit',
+    title: 'Орбита влияния',
+    description: 'Как удержать цикл и сменить траекторию: узел → сцена → операция → фигура → узел.',
+    path: ['node', 'scene', 'operation', 'figure', 'node'],
+  },
 ];
 
 const layoutTitle = document.getElementById('layoutTitle');
@@ -174,6 +235,7 @@ const detailAction = document.getElementById('detailAction');
 const detailType = document.getElementById('detailType');
 const detailEnergy = document.getElementById('detailEnergy');
 const closePanel = document.getElementById('closePanel');
+const pinCardBtn = document.getElementById('pinCard');
 const startReading = document.getElementById('startReading');
 const reshuffle = document.getElementById('reshuffle');
 const shufflePortal = document.getElementById('shufflePortal');
@@ -183,6 +245,7 @@ const exportBtn = document.getElementById('export');
 let currentSpread = spreads[0];
 let currentLayout = [];
 let pinnedCard = null;
+let selectedCard = null;
 
 const colors = {
   node: '#82d0ff',
@@ -218,9 +281,13 @@ function getRandomCard(type) {
 }
 
 function buildLayout(spread) {
-  const layout = spread.path.map((type, index) => {
-    if (index === 0 && pinnedCard && pinnedCard.type === type) return pinnedCard;
-    return getRandomCard(type);
+  const layout = [];
+  spread.path.forEach((type) => {
+    if (pinnedCard && pinnedCard.type === type && !layout.some((card) => card?.id === pinnedCard.id)) {
+      layout.push(pinnedCard);
+    } else {
+      layout.push(getRandomCard(type));
+    }
   });
   currentLayout = layout;
   renderLayout();
@@ -238,7 +305,14 @@ function renderLayout() {
   currentLayout.forEach((card) => {
     const node = document.createElement('div');
     node.className = 'path-node';
-    node.appendChild(buildCard(card));
+    const isPinned = pinnedCard?.id === card.id;
+    node.appendChild(buildCard(card, { isPinned }));
+    if (isPinned) {
+      const badge = document.createElement('span');
+      badge.className = 'pin-label';
+      badge.textContent = 'Закреплено';
+      node.appendChild(badge);
+    }
     const label = document.createElement('span');
     label.className = 'pill';
     label.style.color = colors[card.type];
@@ -250,11 +324,12 @@ function renderLayout() {
   layoutCanvas.appendChild(path);
 }
 
-function buildCard(card) {
+function buildCard(card, { isPinned = false } = {}) {
   const template = document.getElementById('cardTemplate');
   const clone = template.content.cloneNode(true);
   const cardEl = clone.querySelector('.card');
   cardEl.dataset.type = card.type;
+  if (isPinned) cardEl.classList.add('pinned');
   const pill = clone.querySelector('.pill');
   const code = clone.querySelector('.code');
   const title = clone.querySelector('h3');
@@ -291,6 +366,7 @@ function setFilter(type) {
 }
 
 function openDetail(card) {
+  selectedCard = card;
   detailTitle.textContent = `${card.title}`;
   detailEssence.textContent = card.essence;
   detailSignal.textContent = card.signal;
@@ -299,11 +375,29 @@ function openDetail(card) {
   detailEnergy.textContent = card.energy;
   detailType.style.color = colors[card.type];
   detailPanel.classList.add('active');
-  pinnedCard = card;
+  updatePinButton();
 }
 
 function closeDetail() {
   detailPanel.classList.remove('active');
+}
+
+function togglePin() {
+  if (!selectedCard) return;
+  if (pinnedCard?.id === selectedCard.id) {
+    pinnedCard = null;
+  } else {
+    pinnedCard = selectedCard;
+  }
+  updatePinButton();
+  buildLayout(currentSpread);
+}
+
+function updatePinButton() {
+  if (!selectedCard) return;
+  const isPinned = pinnedCard?.id === selectedCard.id;
+  pinCardBtn.textContent = isPinned ? 'Открепить' : 'Закрепить в маршруте';
+  pinCardBtn.classList.toggle('active', isPinned);
 }
 
 function exportLayout() {
@@ -350,6 +444,7 @@ function init() {
     openDetail(random);
   });
   exportBtn.addEventListener('click', exportLayout);
+  pinCardBtn.addEventListener('click', togglePin);
   closePanel.addEventListener('click', closeDetail);
   detailPanel.addEventListener('click', (e) => {
     if (e.target === detailPanel) closeDetail();
