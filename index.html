@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лиминальная Колода</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="cosmos">
+    <header class="shell">
+      <div class="logo">META<span>ARCANUM</span></div>
+      <nav class="nav">
+        <a href="#spreads">Расклады</a>
+        <a href="#layout">Маршрут</a>
+        <a href="#cards">Карты</a>
+      </nav>
+      <button class="glass" id="shufflePortal">Новый портал</button>
+    </header>
+
+    <main class="shell hero" id="top">
+      <div class="hero-text">
+        <p class="eyebrow">Лиминальная колода Метасистемы</p>
+        <h1>Расклад как маршрут между состояниями психики</h1>
+        <p class="lede">Карты делятся на Узлы, Сцены, Фигуры и Операции. Каждая карта — портал в другое состояние, а расклад — топологическая траектория между ними.</p>
+        <div class="hero-actions">
+          <button class="primary" id="startReading">Провести расклад</button>
+          <button class="ghost" id="deepDive">Смотреть карту</button>
+        </div>
+        <div class="tags">
+          <span>meta-liminal</span>
+          <span>vector glyphs</span>
+          <span>hollow effigies</span>
+          <span>broken circuits</span>
+        </div>
+      </div>
+      <div class="portal" aria-hidden="true">
+        <div class="portal-core"></div>
+        <div class="portal-ring"></div>
+        <div class="portal-grid"></div>
+      </div>
+    </main>
+
+    <section class="shell section" id="spreads">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Варианты маршрутов</p>
+          <h2>Расклады как схемы переходов</h2>
+          <p class="lede">Выбери маршрут, чтобы увидеть как карты создают граф переходов: узлы пути, фигуры-навигация, операционные глифы и сцены.</p>
+        </div>
+        <div class="legend">
+          <span class="pill node">Узел</span>
+          <span class="pill figure">Фигура</span>
+          <span class="pill operation">Операция</span>
+          <span class="pill scene">Сцена</span>
+        </div>
+      </div>
+      <div class="grid" id="spreadList"></div>
+    </section>
+
+    <section class="section layout" id="layout">
+      <div class="shell layout-header">
+        <div>
+          <p class="eyebrow">Текущий маршрут</p>
+          <h2 id="layoutTitle">Маршрут: Порог Перехода</h2>
+          <p class="lede" id="layoutDescription">Три точки пути: вход — действие — итог. Линия подсвечивает ход мысли.</p>
+        </div>
+        <div class="controls">
+          <button class="ghost" id="reshuffle">Перетасовать</button>
+          <button class="glass" id="export">Экспорт JSON</button>
+        </div>
+      </div>
+      <div class="layout-canvas shell" id="layoutCanvas"></div>
+    </section>
+
+    <section class="section cards shell" id="cards">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Кодекс карт</p>
+          <h2>Узлы, фигуры, операции, сцены</h2>
+          <p class="lede">Каждая карта — комбинация подложки, тумана и топологических следов. Открой карту, чтобы увидеть смысл и сигналы применения.</p>
+        </div>
+        <div class="filter" id="typeFilter">
+          <button data-type="all" class="active">Все</button>
+          <button data-type="node">Узлы</button>
+          <button data-type="figure">Фигуры</button>
+          <button data-type="operation">Операции</button>
+          <button data-type="scene">Сцены</button>
+        </div>
+      </div>
+      <div class="card-grid" id="cardGrid"></div>
+    </section>
+  </div>
+
+  <div class="panel" id="detailPanel" aria-live="polite">
+    <div class="panel-content">
+      <div class="panel-meta">
+        <span class="pill" id="detailType"></span>
+        <span class="pill" id="detailEnergy"></span>
+      </div>
+      <h3 id="detailTitle">Фигура: Свидетель</h3>
+      <p id="detailEssence" class="lede"></p>
+      <div class="panel-grid">
+        <div>
+          <p class="label">Сигнал</p>
+          <p id="detailSignal"></p>
+        </div>
+        <div>
+          <p class="label">Действие</p>
+          <p id="detailAction"></p>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="ghost" id="closePanel">Закрыть</button>
+        <button class="primary" id="pinCard">Закрепить в маршруте</button>
+      </div>
+    </div>
+  </div>
+
+  <template id="cardTemplate">
+    <article class="card">
+      <div class="card-body">
+        <div class="halo"></div>
+        <div class="shape"></div>
+        <div class="card-top">
+          <span class="pill"></span>
+          <span class="code"></span>
+        </div>
+        <div class="card-center">
+          <h3></h3>
+          <p class="essence"></p>
+        </div>
+        <div class="card-bottom">
+          <span class="energy"></span>
+          <span class="hint"></span>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
